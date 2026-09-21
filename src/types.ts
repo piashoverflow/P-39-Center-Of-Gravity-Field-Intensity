@@ -1,28 +1,56 @@
-export type P39Mode = 'field_vector_grid' | 'null_point_hunter' | 'cg_vs_cm_divergence' | 'superposition_principle';
+export type Language = 'bn' | 'en';
+export type AppTheme = 'clean_bright' | 'midnight';
+export type PresetMode = 'cg_vs_cm' | 'field_lines' | 'lagrange_null' | 'continuous_ring' | 'binary_system';
 
-export interface FieldGridParams {
-  m1: number; // 10^24 kg
-  m2: number;
-  gridResolution: number; // density of vector arrows
+export interface SimulationParams {
+  preset: PresetMode;
+  theme: AppTheme;
+
+  // 1. CG vs CM
+  towerHeightKm: number; // km (100 to 4000 km)
+  isUniformGravity: boolean;
+
+  // 2. Single Mass Field Lines
+  centralMass: number; // 10^24 kg (Earth = 5.97)
+  probeDist: number; // 10^6 m (1 to 20)
+
+  // 3. Lagrange L1 Null Point (Binary Masses)
+  m1: number; // 10^24 kg (Earth = 5.97)
+  m2: number; // 10^24 kg (Moon = 0.073)
+  separationDist: number; // 10^6 m (384)
+  probePos: number; // 10^6 m
+
+  // 4. Continuous Mass Ring
+  ringRadius: number; // 10^6 m
+  ringMass: number; // 10^24 kg
+  axialX: number; // 10^6 m
+
+  // Visual Toggles
+  showVectors: boolean;
   showFieldLines: boolean;
-  showPotentialHeatmap: boolean;
+  showEquipotentials: boolean;
+  showGrid: boolean;
+  slowMo: boolean;
 }
 
-export interface NullPointParams {
-  m1Ratio: number; // e.g. 81 for Earth
-  m2Ratio: number; // e.g. 1 for Moon
-  totalDistanceKm: number; // 384,400 km
-  testMassDisplaced: number;
-}
+export interface TelemetryState {
+  elapsedTime: number;
 
-export interface CgCmParams {
-  structureHeightKm: number; // 100 to 2000 km
-  earthRadiusKm: number; // 6371 km
-  structureType: 'uniform_rod' | 'tapered_tower';
-}
+  // CG vs CM
+  yCM: number; // km
+  yCG: number; // km
+  deltaY: number; // km
 
-export interface SuperpositionParams {
-  geometry: 'line' | 'triangle' | 'square';
-  massValue: number;
-  probeAngleDeg: number;
+  // Field Intensity
+  eFieldMag: number; // N/kg
+  eFieldDir: number; // rad
+  e1: number;
+  e2: number;
+  netE: number; // N/kg
+  nullPointX: number; // 10^6 m
+
+  // Ring
+  ringE: number; // N/kg
+  ringMaxE: number;
+  ringMaxX: number;
 }
