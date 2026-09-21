@@ -1,0 +1,6 @@
+{
+  "name": "P-39: Center of Gravity & Gravitational Field Intensity",
+  "description": "Interactive physics simulation of gravitational field lines, vector superposition, Lagrange L1 null point, and center of gravity divergence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
