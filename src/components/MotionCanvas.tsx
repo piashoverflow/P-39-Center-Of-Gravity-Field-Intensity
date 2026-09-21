@@ -199,8 +199,25 @@ export const MotionCanvas: React.FC<MotionCanvasProps> = ({
         ctx.fillStyle = '#f43f5e';
         ctx.font = 'bold 12px Plus Jakarta Sans';
         ctx.textAlign = 'center';
-        ctx.fillText(`★ ভারকেন্দ্র ভরকেন্দ্রের নিচে অবস্থান করে: Δy = ${fmtNum(telemetry.deltaY, 1)} km`, width * 0.5, 40);
+        ctx.fillText(`⚠️ অ-সুষম মহাকর্ষে ভারকেন্দ্র ভরকেন্দ্রের নিচে অবস্থান করে: Δy = ${fmtNum(telemetry.deltaY, 2)} km`, width * 0.5, 40);
       }
+
+      // Animated Inspection Elevator Car on tower
+      const carFrac = isPlaying ? 0.5 + 0.42 * Math.sin(telemetry.elapsedTime * 1.2) : 0.5;
+      const carY = groundY - towerH * carFrac;
+      ctx.fillStyle = '#f59e0b';
+      drawRoundRect(ctx, towerX + towerW / 2 - 8, carY - 6, 16, 12, 3);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      // Local g sensor reading on moving car
+      const carHeightKm = params.towerHeightKm * carFrac;
+      const carG = 9.81 * Math.pow(6371 / (6371 + carHeightKm), 2);
+      ctx.fillStyle = '#fef08a';
+      ctx.font = 'bold 9px JetBrains Mono';
+      ctx.textAlign = 'left';
+      ctx.fillText(`g(y) = ${fmtNum(carG, 2)} N/kg`, towerX + towerW / 2 + 12, carY + 3);
     }
 
     // ==========================================
@@ -330,7 +347,8 @@ export const MotionCanvas: React.FC<MotionCanvasProps> = ({
 
       // Probe
       const probeFrac = params.probePos / (params.separationDist || 1);
-      const probeX = m1X + sepPix * probeFrac;
+      const drift = isPlaying ? Math.sin(telemetry.elapsedTime * 2.0) * 18 : 0;
+      const probeX = m1X + sepPix * probeFrac + drift;
 
       ctx.fillStyle = '#f59e0b';
       ctx.beginPath();
@@ -397,8 +415,9 @@ export const MotionCanvas: React.FC<MotionCanvasProps> = ({
       ctx.textAlign = 'center';
       ctx.fillText('x = a/√2 (Max E)', peakPixX, centerY - 32);
 
-      // Probe along axis
-      const probeXDist = params.axialX * 20;
+      // Probe along axis executing SHM oscillation through ring center
+      const shmPhase = isPlaying ? Math.cos(telemetry.elapsedTime * 2.5) : 1;
+      const probeXDist = params.axialX * 20 * shmPhase;
       const pPixX = centerX + probeXDist;
 
       ctx.fillStyle = '#f59e0b';
@@ -407,9 +426,10 @@ export const MotionCanvas: React.FC<MotionCanvasProps> = ({
       ctx.fill();
 
       // Field vector towards ring center
-      if (params.axialX > 0.1) {
+      if (Math.abs(probeXDist) > 2) {
         const ringELen = Math.min(60, Math.max(10, telemetry.ringE * 8));
-        drawVectorArrow(ctx, pPixX, centerY, pPixX - ringELen, centerY, '#f43f5e', `E_x = ${fmtNum(telemetry.ringE, 2)}`, 7);
+        const dir = probeXDist > 0 ? -1 : 1;
+        drawVectorArrow(ctx, pPixX, centerY, pPixX + dir * ringELen, centerY, '#f43f5e', `E_x = ${fmtNum(telemetry.ringE, 2)}`, 7);
       }
     }
   }, [containerDimensions, params, telemetry, language]);
